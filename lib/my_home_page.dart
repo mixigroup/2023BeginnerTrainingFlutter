@@ -36,6 +36,13 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
+            // 増やせば増やすほど縦に並ぶ！
+            const Text(
+              'ほげほげ',
+            ),
+            const Text(
+              'ふがふが',
+            ),
             const Text(
               'You have pushed the button this many times:',
             ),
