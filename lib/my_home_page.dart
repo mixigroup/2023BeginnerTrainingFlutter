@@ -30,20 +30,23 @@ class _MyHomePageState extends State<MyHomePage> {
           children: [
             const Text('久野の好きなものリスト'),
             // ListView を作ってくれるビルダー
-            ListView.builder(
-              // 上で作った list の長さ分リストを作るよ！
-              itemCount: list.length,
-              // 今回は使わないので BuildContext は省略
-              // index に番目が入る
-              itemBuilder: (_, index) {
-                return Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    // list の index 番目のテキストを表示
-                    child: Text(list[index]),
-                  ),
-                );
-              },
+            SizedBox(
+              height: 200,
+              child: ListView.builder(
+                // 上で作った list の長さ分リストを作るよ！
+                itemCount: list.length,
+                // 今回は使わないので BuildContext は省略
+                // index に番目が入る
+                itemBuilder: (_, index) {
+                  return Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      // list の index 番目のテキストを表示
+                      child: Text(list[index]),
+                    ),
+                  );
+                },
+              ),
             ),
           ],
         ),
