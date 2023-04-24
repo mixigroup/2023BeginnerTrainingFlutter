@@ -13,7 +13,8 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  String text = '';
+  String tmpText = '';
+  String showText = '';
 
   @override
   Widget build(BuildContext context) {
@@ -31,14 +32,19 @@ class _MyHomePageState extends State<MyHomePage> {
             TextField(
               // 打った文字が value に入ってくる
               onChanged: (value) {
-                // state に入れて際描画！
-                setState(() {
-                  text = value;
-                });
+                tmpText = value;
               },
             ),
+            IconButton(
+              onPressed: () {
+                setState(() {
+                  showText = tmpText;
+                });
+              },
+              icon: const Icon(Icons.arrow_downward),
+            ),
             // 表示
-            Text(text),
+            Text(showText),
           ],
         ),
       ),
