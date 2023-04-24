@@ -30,8 +30,7 @@ class _MyHomePageState extends State<MyHomePage> {
           children: [
             const Text('久野の好きなものリスト'),
             // ListView を作ってくれるビルダー
-            SizedBox(
-              height: 200,
+            Expanded(
               child: ListView.builder(
                 // 上で作った list の長さ分リストを作るよ！
                 itemCount: list.length,
