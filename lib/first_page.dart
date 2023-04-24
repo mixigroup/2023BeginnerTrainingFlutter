@@ -1,4 +1,3 @@
-import 'package:chat_sample/second_page.dart';
 import 'package:flutter/material.dart';
 
 class FirstPage extends StatelessWidget {
@@ -15,11 +14,13 @@ class FirstPage extends StatelessWidget {
             IconButton(
               onPressed: () {
                 // 画面遷移には Navigator を使う
-                Navigator.push(
-                  context,
-                  // route（道）を作ってあげる
-                  MaterialPageRoute(builder: (context) => const SecondPage()),
-                );
+                // Navigator.push(
+                //   context,
+                //   // route（道）を作ってあげる
+                //   MaterialPageRoute(builder: (context) => const SecondPage()),
+                // );
+                // main に route を登録しておくと遷移が楽ちん♩
+                Navigator.pushNamed(context, "/second");
               },
               icon: const Icon(Icons.arrow_forward),
             )
