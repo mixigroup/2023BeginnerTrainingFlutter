@@ -17,6 +17,8 @@ class ChatPage extends StatefulWidget {
 
 class _ChatPageState extends State<ChatPage> {
   String _text = '';
+  // ローディングの表示・非表示を切り替える bool 値を追加
+  bool loadingFlag = false;
 
   Future<void> openPostPage() async {
     // pop 時に渡ってきた値は await して取得！
@@ -34,6 +36,11 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   Future<void> postChat(String text) async {
+    // ローディング開始！
+    setState(() {
+      loadingFlag = true;
+    });
+
     final token = dotenv.get('MY_TOKEN');
 
     // 接続！
@@ -69,6 +76,8 @@ class _ChatPageState extends State<ChatPage> {
 
     setState(() {
       _text = answer.choices.first.message.content;
+      // 回答受け取れたらローディングをやめる
+      loadingFlag = false;
     });
   }
 
@@ -86,9 +95,19 @@ class _ChatPageState extends State<ChatPage> {
       ),
       // Center で真ん中寄せ
       body: Center(
-        child: Text(
-          _text,
-          style: Theme.of(context).textTheme.headlineMedium,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              _text,
+              style: Theme.of(context).textTheme.headlineMedium,
+            ),
+            loadingFlag
+                ? const CircularProgressIndicator(
+                    color: Colors.orange,
+                  )
+                : const SizedBox.shrink()
+          ],
         ),
       ),
       // 右下のプラスボタン（Floating Action Button と言います）
