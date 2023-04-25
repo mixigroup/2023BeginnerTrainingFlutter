@@ -31,14 +31,19 @@ class _ChatPageState extends State<ChatPage> {
     super.initState();
     // await を使うために Future で囲う
     Future(() async {
-      final box = await messageBox;
-      setState(() {
-        // state に hive に保存した中身ぶっこむ！
-        // map でひとつひとつ取り出して型（今回は key が String，value も String）つけてあげる
-        messages = box.values
-            .map((message) => Map<String, String>.from(message))
-            .toList();
-      });
+      await getMessages();
+    });
+  }
+
+  // messages の取得を切り出し
+  Future<void> getMessages() async {
+    final box = await messageBox;
+    setState(() {
+      // state に hive に保存した中身ぶっこむ！
+      // map でひとつひとつ取り出して型（今回は key が String，value も String）つけてあげる
+      messages = box.values
+          .map((message) => Map<String, String>.from(message))
+          .toList();
     });
   }
 
@@ -72,6 +77,8 @@ class _ChatPageState extends State<ChatPage> {
     };
     // 自分のメッセージを箱に保存
     box.add(message);
+    // 一旦 messages 取得することで自分のテキストを表示
+    await getMessages();
 
     final token = dotenv.get('MY_TOKEN');
 
@@ -111,10 +118,8 @@ class _ChatPageState extends State<ChatPage> {
     };
     box.add(botMessage);
 
+    await getMessages();
     setState(() {
-      messages = box.values
-          .map((message) => Map<String, String>.from(message))
-          .toList();
       // 回答受け取れたらローディングをやめる
       loadingFlag = false;
     });
