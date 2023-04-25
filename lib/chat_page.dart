@@ -12,10 +12,11 @@ class ChatPage extends StatefulWidget {
 }
 
 class _ChatPageState extends State<ChatPage> {
-  final int _counter = 0;
+  String text = '';
 
-  void openPostPage() {
-    Navigator.push(
+  Future<void> openPostPage() async {
+    // pop 時に渡ってきた値は await して取得！
+    final v = await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => const PostPage(),
@@ -24,6 +25,14 @@ class _ChatPageState extends State<ChatPage> {
         fullscreenDialog: true,
       ),
     );
+    // state 更新
+
+    // バツボタンを押して戻ると pop 時に値は渡って来なくて null になってしまうので条件を追加
+    if (v != null) {
+      setState(() {
+        text = v;
+      });
+    }
   }
 
   @override
@@ -40,24 +49,16 @@ class _ChatPageState extends State<ChatPage> {
       ),
       // Center で真ん中寄せ
       body: Center(
-        // Column は [] の中身を縦に並べてくれる widget
-        // Row で横になるよ
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
+        child: Text(
+          text,
+          style: Theme.of(context).textTheme.headlineMedium,
         ),
       ),
       // 右下のプラスボタン（Floating Action Button と言います）
       floatingActionButton: FloatingActionButton(
-        onPressed: openPostPage,
+        onPressed: () async {
+          await openPostPage();
+        },
         tooltip: 'post',
         child: const Icon(
           Icons.edit,

@@ -8,6 +8,8 @@ class PostPage extends StatefulWidget {
 }
 
 class _PostPageState extends State<PostPage> {
+  String text = '';
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -17,20 +19,26 @@ class _PostPageState extends State<PostPage> {
         foregroundColor: Colors.black,
         actions: [
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              // pop 時に値を渡せる！
+              Navigator.pop(context, text);
+            },
             icon: const Icon(Icons.send),
           )
         ],
       ),
-      body: const Padding(
-        padding: EdgeInsets.all(8.0),
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
         child: TextField(
           autofocus: true,
-          decoration: InputDecoration(
+          decoration: const InputDecoration(
             border: InputBorder.none,
           ),
           maxLines: null,
           enabled: true,
+          onChanged: (value) {
+            text = value;
+          },
         ),
       ),
     );
