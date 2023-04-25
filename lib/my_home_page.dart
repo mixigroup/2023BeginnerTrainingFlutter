@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+// http パッケージを使うために http として import
+import 'package:http/http.dart' as http;
 
 // こちらが　MyHomePage
 // StatefulWidget に関しても後で説明するよ！！！！！
@@ -13,12 +15,27 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+  final int _counter = 0;
 
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
+  // リポジトリ取得のメソッドを作るよ！
+  Future<void> getRepo() async {
+    // url とパスを書く
+    final url = Uri.https('api.github.com', 'users/kno3a87/repos');
+    // 今回は get でリポジトリ一覧取得！結果が response に入ってくる！
+    final response = await http.get(
+      url,
+      // ヘッダー書きたいならこう！
+      // ```
+      // headers: {
+      //   'Authorization':
+      //       'Bearer <MY-TOKEN>',
+      //   'X-GitHub-Api-Version': '2022-11-28',
+      //   'Accept': 'application/vnd.github+json'
+      // },
+      // ```
+    );
+    // ステータスコードを確認してみる
+    debugPrint('Response status: ${response.statusCode}');
   }
 
   @override
@@ -48,8 +65,10 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       // 右下のプラスボタン（Floating Action Button と言います）
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
+        onPressed: () async {
+          await getRepo();
+        },
+        tooltip: 'get my repository',
         child: const Icon(Icons.add),
       ),
     );
