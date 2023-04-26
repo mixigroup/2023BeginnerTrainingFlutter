@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:chat_sample/model/repository.dart';
 import 'package:flutter/material.dart';
 // http パッケージを使うために http として import
 import 'package:http/http.dart' as http;
@@ -38,8 +39,12 @@ class _MyHomePageState extends State<MyHomePage> {
     );
     // json から dart で扱える（Map<String, dynamic> のリスト）に変換（decode）
     final List body = json.decode(response.body);
-    // この取得方法になるので typo したりネストしたりが大変！🥺
-    print(body[0]['name']);
+    // リストに入ってる Map<String, dynamic>を map で１つ１つ取り出し Repository モデルに変換
+    List<Repository> repositories = List<Repository>.from(
+      body.map((item) => Repository.fromJson(item)),
+    );
+    // . でAPIのレスポンスのプロパティの候補がサジェストされるようになる✨
+    debugPrint(repositories[0].name);
 
     // state に保存する！
     setState(() {
