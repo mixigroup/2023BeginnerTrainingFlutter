@@ -86,11 +86,7 @@ class _ChatPageState extends State<ChatPage> {
     final token = dotenv.get('MY_TOKEN');
 
     // ChatGPT に渡すために MessageItem から map に変換
-    final messages = box.values
-        .map(
-          (e) => {'role': e.role, 'content': e.content},
-        )
-        .toList();
+    final messages = box.values.map((e) => e.toJson()).toList();
 
     // 接続！
     var url = Uri.https(
@@ -98,23 +94,23 @@ class _ChatPageState extends State<ChatPage> {
       "v1/chat/completions",
     );
     try {
-    final response = await http.post(
-      url,
-      body: json.encode({
-        "model": "gpt-3.5-turbo",
-        // system に追加すると面白い話し方とか指定できる！
-        // ```
-        // "messages": [
-        //   {"role": "system", "content": "語尾に『にゃん』をつけて可愛くしゃべってください！"},
-        //   ...state.messages,
-        // ],
-        // ```
-        "messages": messages,
-      }),
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer $token"
-      },
+      final response = await http.post(
+        url,
+        body: json.encode({
+          "model": "gpt-3.5-turbo",
+          // system に追加すると面白い話し方とか指定できる！
+          // ```
+          // "messages": [
+          //   {"role": "system", "content": "語尾に『にゃん』をつけて可愛くしゃべってください！"},
+          //   ...state.messages,
+          // ],
+          // ```
+          "messages": messages,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token"
+        },
       ) // 30秒経っても返答なかったら TimeoutException を投げる
           .timeout(const Duration(seconds: 30));
 
@@ -123,12 +119,12 @@ class _ChatPageState extends State<ChatPage> {
       // model に変換
       final answer = Answer.fromJson(body);
 
-    // ChatGPT のメッセージ
-    final botMessage = MessageItem(
-      role: 'assistant',
-      content: answer.choices.first.message.content,
-    );
-    box.add(botMessage);
+      // ChatGPT のメッセージ
+      final botMessage = MessageItem(
+        role: 'assistant',
+        content: answer.choices.first.message.content,
+      );
+      box.add(botMessage);
 
       await getMessages();
       setState(() {
