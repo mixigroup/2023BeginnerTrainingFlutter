@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:chat_sample/model/repository.dart';
 import 'package:flutter/material.dart';
 // http パッケージを使うために http として import
 import 'package:http/http.dart' as http;
@@ -15,7 +18,8 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  String _body = '';
+  // state を変更！
+  List<Repository> _repositories = [];
 
   // リポジトリ取得のメソッドを作るよ！
   Future<void> getRepo() async {
@@ -34,11 +38,18 @@ class _MyHomePageState extends State<MyHomePage> {
       // },
       // ```
     );
-    // 中身を確認してみる
-    debugPrint('Response status: ${response.body}');
+    // json から dart で扱える（Map<String, dynamic> のリスト）に変換（decode）
+    final List body = json.decode(response.body);
+    // リストに入ってる Map<String, dynamic>を map で１つ１つ取り出し Repository モデルに変換
+    List<Repository> repositories = List<Repository>.from(
+      body.map((item) => Repository.fromJson(item)),
+    );
+    // . でAPIのレスポンスのプロパティの候補がサジェストされるようになる✨
+    debugPrint(repositories[0].name);
+
     // state に保存する！
     setState(() {
-      _body = response.body;
+      _repositories = repositories;
     });
   }
 
@@ -50,13 +61,14 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      // 画面から要素がはみ出したらスクロールできるようにしてくれるウィジェット
-      body: SingleChildScrollView(
-        child: Text(
-          _body,
-          style: Theme.of(context).textTheme.headlineMedium,
-        ),
-      ),
+      body: _repositories.isEmpty
+          ? const SizedBox.shrink()
+          : ListView.builder(
+              itemCount: _repositories.length,
+              itemBuilder: ((context, index) {
+                return Text(_repositories[index].name);
+              }),
+            ),
       // 右下のプラスボタン（Floating Action Button と言います）
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
