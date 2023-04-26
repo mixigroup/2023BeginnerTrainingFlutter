@@ -1,24 +1,29 @@
+import 'package:chat_sample/post_page.dart';
 import 'package:flutter/material.dart';
 
-// こちらが　MyHomePage
-// StatefulWidget に関しても後で説明するよ！！！！！
-class MyHomePage extends StatefulWidget {
+class ChatPage extends StatefulWidget {
   // title を受け取ってるね👀
-  const MyHomePage({super.key, required this.title});
+  const ChatPage({super.key, required this.title});
 
   final String title;
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<ChatPage> createState() => _ChatPageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class _ChatPageState extends State<ChatPage> {
+  final int _counter = 0;
 
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
+  void openPostPage() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const PostPage(),
+        // fullscreenDialog を true にすることで遷移方法が横ではなく下からになる
+        // またヘッダー左上のアイコンが戻るボタンからバツボタンに変わる！
+        fullscreenDialog: true,
+      ),
+    );
   }
 
   @override
@@ -27,7 +32,11 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       // AppBar は上のヘッダー
       appBar: AppBar(
-        title: Text(widget.title),
+        title: Text(
+          widget.title,
+          style: const TextStyle(color: Colors.white),
+        ),
+        elevation: 0,
       ),
       // Center で真ん中寄せ
       body: Center(
@@ -48,9 +57,12 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       // 右下のプラスボタン（Floating Action Button と言います）
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+        onPressed: openPostPage,
+        tooltip: 'post',
+        child: const Icon(
+          Icons.edit,
+          color: Colors.white,
+        ),
       ),
     );
   }
