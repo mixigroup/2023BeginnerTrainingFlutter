@@ -104,7 +104,8 @@ class _ChatPageState extends State<ChatPage> {
         "Content-Type": "application/json",
         "Authorization": "Bearer $token"
       },
-    );
+      ) // 30秒経っても返答なかったら TimeoutException を投げる
+          .timeout(const Duration(seconds: 30));
 
     // map に変換
     Map<String, dynamic> body = json.decode(utf8.decode(response.bodyBytes));
