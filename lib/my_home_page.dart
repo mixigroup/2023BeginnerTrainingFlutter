@@ -36,6 +36,23 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
+            // SizedBox で大きさ（px）を決めてあげる
+            const SizedBox(
+              height: 50,
+              width: 50,
+              // ColoredBox で色を塗ってあげる
+              // 色も用意してくれてる🎨
+              child: ColoredBox(color: Colors.amber),
+              // 自分で色指定もできる（丸動かすと自動で RGB 挿入してくれる🥺）
+              // ```
+              // child: ColoredBox(color: Color.fromARGB(255, 85, 170, 116)),
+              // ```
+            ),
+            const SizedBox(
+              height: 100,
+              width: 100,
+              child: ColoredBox(color: Colors.pink),
+            ),
             const Text(
               'You have pushed the button this many times:',
             ),
