@@ -15,7 +15,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final int _counter = 0;
+  String _body = '';
 
   // リポジトリ取得のメソッドを作るよ！
   Future<void> getRepo() async {
@@ -34,8 +34,12 @@ class _MyHomePageState extends State<MyHomePage> {
       // },
       // ```
     );
-    // ステータスコードを確認してみる
-    debugPrint('Response status: ${response.statusCode}');
+    // 中身を確認してみる
+    debugPrint('Response status: ${response.body}');
+    // state に保存する！
+    setState(() {
+      _body = response.body;
+    });
   }
 
   @override
@@ -46,21 +50,11 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      // Center で真ん中寄せ
-      body: Center(
-        // Column は [] の中身を縦に並べてくれる widget
-        // Row で横になるよ
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
+      // 画面から要素がはみ出したらスクロールできるようにしてくれるウィジェット
+      body: SingleChildScrollView(
+        child: Text(
+          _body,
+          style: Theme.of(context).textTheme.headlineMedium,
         ),
       ),
       // 右下のプラスボタン（Floating Action Button と言います）
