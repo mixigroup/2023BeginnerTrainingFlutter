@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 class ChatPage extends StatefulWidget {
   // title を受け取ってるね👀
@@ -16,6 +17,9 @@ class ChatPage extends StatefulWidget {
 }
 
 class _ChatPageState extends State<ChatPage> {
+  // メッセージを溜めてく箱を準備
+  late final Future<Box> messageBox = Hive.openBox('messages');
+
   String _text = '';
   // ローディングの表示・非表示を切り替える bool 値を追加
   bool loadingFlag = false;
@@ -40,6 +44,16 @@ class _ChatPageState extends State<ChatPage> {
     setState(() {
       loadingFlag = true;
     });
+
+    // 準備した箱を使えるように
+    final box = await messageBox;
+    // 自分のメッセージ
+    final message = {
+      'content': text,
+      'role': "user",
+    };
+    // 自分のメッセージを箱に保存
+    box.add(message);
 
     final token = dotenv.get('MY_TOKEN');
 
@@ -74,11 +88,21 @@ class _ChatPageState extends State<ChatPage> {
     // model に変換
     final answer = Answer.fromJson(body);
 
+    // ChatGPT のメッセージ
+    final botMessage = {
+      'content': answer.choices.first.message.content,
+      'role': 'assistant',
+    };
+    box.add(botMessage);
+
     setState(() {
       _text = answer.choices.first.message.content;
       // 回答受け取れたらローディングをやめる
       loadingFlag = false;
     });
+
+    // .values で全ての value を取得できるので確認してみる
+    debugPrint(box.values.toString());
   }
 
   @override
