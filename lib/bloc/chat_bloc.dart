@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:chat_sample/model/answer.dart';
 import 'package:chat_sample/model/message.dart';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:chat_sample/bloc/chat_event.dart';
 import 'package:chat_sample/bloc/chat_state.dart';
@@ -19,6 +20,15 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     on<ChatSend>(_onChatSend);
     on<ChatDelete>(_onChatDelete);
     on<ChatLoad>(_onChatLoad);
+    on<ChatRemoveError>(_onChatRemoveError);
+  }
+
+  // エラーを null に戻すメソッド
+  Future<void> _onChatRemoveError(
+    ChatRemoveError event,
+    Emitter<ChatState> emit,
+  ) async {
+    emit(state.copyWith(error: null));
   }
 
   // チャットを取得するメソッド
@@ -107,6 +117,9 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       emit(state.copyWith(messages: [...state.messages, botMessage]));
       // ChatGPT のメッセージも box に保存しておく
       (await messageBox).add(botMessage);
+    } on Exception catch (e) {
+      debugPrint("$e");
+      emit(state.copyWith(error: e));
     } finally {
       // 最後にローディングのフラグを false にする
       emit(state.copyWith(loadingFlag: false));

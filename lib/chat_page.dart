@@ -52,102 +52,131 @@ class _ChatPageState extends State<ChatPage> {
     chatBloc.add(ChatSend(text: v));
   }
 
-  @override
-  Widget build(BuildContext context) {
-    // state が変わったら自動で UI 描画される！
-    return BlocBuilder<ChatBloc, ChatState>(
-      builder: (context, state) {
-        return Scaffold(
-          // AppBar は上のヘッダー
-          appBar: AppBar(
-            title: Text(
-              widget.title,
-              style: const TextStyle(color: Colors.white),
-            ),
-            elevation: 0,
-          ),
-          body: SafeArea(
-            // state が保持してる messages を見る
-            child: state.messages.isEmpty
-                ? const Center(
-                    child: Text(
-                      'ChatGPT に何か聞いてみよう🫶🏻',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  )
-                // separated にするとアイテムの間に何かしらウィジェットを置ける（今回は隙間開けただけだけど線引いたりもできる）
-                : ListView.separated(
-                    // reverse にすると List の下部から表示してくれるのでチャットぽい UI になる
-                    reverse: true,
-                    padding: const EdgeInsets.only(
-                      right: 14,
-                      left: 14,
-                      bottom: 40,
-                    ),
-                    itemCount: state.messages.length + 1,
-                    itemBuilder: (context, index) {
-                      // Hive には新しいものが先頭に保存されてく
-                      // チャットアプリは最新が一番下にくるので reverse する
-                      final reverseMessage = state.messages.reversed.toList();
-                      // reverse してるのでローディングを一番上に追加 = 一番下に表示されるように！
-                      if (index == 0) {
-                        return SizedBox(
-                          height: 40,
-                          width: 40,
-                          // Align がないとローディングが横幅いっぱい広がろうとする
-                          child: Align(
-                            alignment: Alignment.center,
-                            child: state.loadingFlag
-                                ? const CircularProgressIndicator(
-                                    color: Colors.orangeAccent,
-                                  )
-                                : const SizedBox.shrink(),
-                          ),
-                        );
-                      }
-                      // 保存されてるメッセージの content を取得
-                      return chatText(reverseMessage[index - 1]);
-                    },
-                    separatorBuilder: (context, index) {
-                      return const SizedBox(height: 12);
-                    },
-                  ),
-          ),
-          // 右下のプラスボタン（Floating Action Button と言います）
-          floatingActionButton: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // 全削除ボタンの追加
-              FloatingActionButton(
-                // There are multiple heroes that share the same tag within a subtree.
-                // 上記エラーが出てしまうのでボタンごとに hero tag を指定してあげる必要がある
-                heroTag: "clearMessage",
-                backgroundColor: Colors.red,
-                onPressed: () async {
-                  clearMessage();
-                },
-                tooltip: 'clear messages',
-                child: const Icon(
-                  Icons.close,
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(width: 8),
-              FloatingActionButton(
-                heroTag: "openPostPage",
-                onPressed: () async {
-                  await writeMessage();
-                },
-                tooltip: 'post',
-                child: const Icon(
-                  Icons.edit,
-                  color: Colors.white,
-                ),
-              ),
-            ],
-          ),
+  void showErrorDialog() {
+    final chatBloc = context.read<ChatBloc>();
+    showDialog(
+      context: context,
+      builder: (_) {
+        return AlertDialog(
+          title: const Text('エラー'),
+          content: const Text('しばらく時間を置いてからお試しください'),
+          actions: [
+            TextButton(
+              child: const Text('はい'),
+              onPressed: () {
+                Navigator.pop(context);
+                chatBloc.add(const ChatRemoveError());
+              },
+            )
+          ],
         );
       },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocListener<ChatBloc, ChatState>(
+      listener: (context, state) {
+        if (state.error != null) {
+          showErrorDialog();
+        }
+      },
+      // state が変わったら自動で UI 描画される！
+      child: BlocBuilder<ChatBloc, ChatState>(
+        builder: (context, state) {
+          return Scaffold(
+            // AppBar は上のヘッダー
+            appBar: AppBar(
+              title: Text(
+                widget.title,
+                style: const TextStyle(color: Colors.white),
+              ),
+              elevation: 0,
+            ),
+            body: SafeArea(
+              // state が保持してる messages を見る
+              child: state.messages.isEmpty
+                  ? const Center(
+                      child: Text(
+                        'ChatGPT に何か聞いてみよう🫶🏻',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    )
+                  // separated にするとアイテムの間に何かしらウィジェットを置ける（今回は隙間開けただけだけど線引いたりもできる）
+                  : ListView.separated(
+                      // reverse にすると List の下部から表示してくれるのでチャットぽい UI になる
+                      reverse: true,
+                      padding: const EdgeInsets.only(
+                        right: 14,
+                        left: 14,
+                        bottom: 40,
+                      ),
+                      itemCount: state.messages.length + 1,
+                      itemBuilder: (context, index) {
+                        // Hive には新しいものが先頭に保存されてく
+                        // チャットアプリは最新が一番下にくるので reverse する
+                        final reverseMessage = state.messages.reversed.toList();
+                        // reverse してるのでローディングを一番上に追加 = 一番下に表示されるように！
+                        if (index == 0) {
+                          return SizedBox(
+                            height: 40,
+                            width: 40,
+                            // Align がないとローディングが横幅いっぱい広がろうとする
+                            child: Align(
+                              alignment: Alignment.center,
+                              child: state.loadingFlag
+                                  ? const CircularProgressIndicator(
+                                      color: Colors.orangeAccent,
+                                    )
+                                  : const SizedBox.shrink(),
+                            ),
+                          );
+                        }
+                        // 保存されてるメッセージの content を取得
+                        return chatText(reverseMessage[index - 1]);
+                      },
+                      separatorBuilder: (context, index) {
+                        return const SizedBox(height: 12);
+                      },
+                    ),
+            ),
+            // 右下のプラスボタン（Floating Action Button と言います）
+            floatingActionButton: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // 全削除ボタンの追加
+                FloatingActionButton(
+                  // There are multiple heroes that share the same tag within a subtree.
+                  // 上記エラーが出てしまうのでボタンごとに hero tag を指定してあげる必要がある
+                  heroTag: "clearMessage",
+                  backgroundColor: Colors.red,
+                  onPressed: () async {
+                    clearMessage();
+                  },
+                  tooltip: 'clear messages',
+                  child: const Icon(
+                    Icons.close,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                FloatingActionButton(
+                  heroTag: "openPostPage",
+                  onPressed: () async {
+                    await writeMessage();
+                  },
+                  tooltip: 'post',
+                  child: const Icon(
+                    Icons.edit,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 

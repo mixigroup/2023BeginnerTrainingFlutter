@@ -8,24 +8,28 @@ import 'package:equatable/equatable.dart';
 class ChatState extends Equatable {
   final List<MessageItem> messages;
   final bool loadingFlag;
+  final Exception? error;
 
   const ChatState({
     this.messages = const [],
     this.loadingFlag = false,
+    this.error,
   });
 
   @override
-  List<Object> get props => [messages, loadingFlag];
+  List<Object?> get props => [messages, loadingFlag, error];
 
   // 独自の copyWith メソッドを作成
   // ChatState をコピーして値を引数に更新して返す！
   ChatState copyWith({
     List<MessageItem>? messages,
     bool? loadingFlag,
+    Exception? error,
   }) {
     return ChatState(
       messages: messages ?? this.messages,
       loadingFlag: loadingFlag ?? this.loadingFlag,
+      error: error,
     );
   }
 }

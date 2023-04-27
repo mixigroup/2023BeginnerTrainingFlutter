@@ -20,3 +20,7 @@ class ChatSend extends ChatEvent {
 class ChatDelete extends ChatEvent {
   const ChatDelete();
 }
+
+class ChatRemoveError extends ChatEvent {
+  const ChatRemoveError();
+}
