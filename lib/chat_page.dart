@@ -1,4 +1,5 @@
 import 'package:chat_sample/model/answer.dart';
+import 'package:chat_sample/model/message.dart';
 import 'package:chat_sample/post_page.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -17,11 +18,11 @@ class ChatPage extends StatefulWidget {
 }
 
 class _ChatPageState extends State<ChatPage> {
-  // メッセージを溜めてく箱を準備
-  late final Future<Box> messageBox = Hive.openBox('messages');
+  // 箱に保存されるのが Map から MessageItem になるので一度アプリを消して今まで保存してたものを消してあげる必要がある
+  late final Future<Box<MessageItem>> messageBox = Hive.openBox('messages');
 
-  // state をリストに変更！
-  List<Map<String, String>> messages = [];
+  // Map だったのがモデルになる
+  List<MessageItem> messages = [];
   // ローディングの表示・非表示を切り替える bool 値を追加
   bool loadingFlag = false;
 
@@ -39,11 +40,7 @@ class _ChatPageState extends State<ChatPage> {
   Future<void> getMessages() async {
     final box = await messageBox;
     setState(() {
-      // state に hive に保存した中身ぶっこむ！
-      // map でひとつひとつ取り出して型（今回は key が String，value も String）つけてあげる
-      messages = box.values
-          .map((message) => Map<String, String>.from(message))
-          .toList();
+      messages = box.values.toList();
     });
   }
 
@@ -80,10 +77,7 @@ class _ChatPageState extends State<ChatPage> {
     // 準備した箱を使えるように
     final box = await messageBox;
     // 自分のメッセージ
-    final message = {
-      'content': text,
-      'role': "user",
-    };
+    final message = MessageItem(role: 'user', content: text);
     // 自分のメッセージを箱に保存
     box.add(message);
     // 一旦 messages 取得することで自分のテキストを表示
@@ -91,29 +85,36 @@ class _ChatPageState extends State<ChatPage> {
 
     final token = dotenv.get('MY_TOKEN');
 
+    // ChatGPT に渡すために MessageItem から map に変換
+    final messages = box.values
+        .map(
+          (e) => {'role': e.role, 'content': e.content},
+        )
+        .toList();
+
     // 接続！
     var url = Uri.https(
       "api.openai.com",
       "v1/chat/completions",
     );
     try {
-      final response = await http.post(
-        url,
-        body: json.encode({
-          "model": "gpt-3.5-turbo",
-          // system に追加すると面白い話し方とか指定できる！
-          // ```
-          // "messages": [
-          //   {"role": "system", "content": "語尾に『にゃん』をつけて可愛くしゃべってください！"},
-          //   ...state.messages,
-          // ],
-          // ```
-          "messages": box.values.toList(),
-        }),
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer $token"
-        },
+    final response = await http.post(
+      url,
+      body: json.encode({
+        "model": "gpt-3.5-turbo",
+        // system に追加すると面白い話し方とか指定できる！
+        // ```
+        // "messages": [
+        //   {"role": "system", "content": "語尾に『にゃん』をつけて可愛くしゃべってください！"},
+        //   ...state.messages,
+        // ],
+        // ```
+        "messages": messages,
+      }),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $token"
+      },
       ) // 30秒経っても返答なかったら TimeoutException を投げる
           .timeout(const Duration(seconds: 30));
 
@@ -122,12 +123,12 @@ class _ChatPageState extends State<ChatPage> {
       // model に変換
       final answer = Answer.fromJson(body);
 
-      // ChatGPT のメッセージ
-      final botMessage = {
-        'content': answer.choices.first.message.content,
-        'role': 'assistant',
-      };
-      box.add(botMessage);
+    // ChatGPT のメッセージ
+    final botMessage = MessageItem(
+      role: 'assistant',
+      content: answer.choices.first.message.content,
+    );
+    box.add(botMessage);
 
       await getMessages();
       setState(() {
@@ -265,9 +266,9 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   // 長いのでチャットひとつひとつのデザインを切り出しました
-  Widget chatText(Map<String, String> message) {
+  Widget chatText(MessageItem message) {
     // メッセージの投稿主が自分なのか ChatGPT なのか
-    final isAssistant = message['role'] == 'assistant';
+    final isAssistant = message.role == 'assistant';
 
     return Align(
       // 自分の投稿は右寄せ，ChatGPT の投稿は左寄せに
@@ -297,7 +298,7 @@ class _ChatPageState extends State<ChatPage> {
             child: Text(
               // ?? は左辺が null だったら右辺を使用する，の意味
               // 今回は message['content'] が null だったら ''（空文字）を Text として表示する
-              message['content'] ?? '',
+              message.content,
               style: TextStyle(
                 fontSize: 20,
                 color: isAssistant ? Colors.white : Colors.black,

@@ -1,4 +1,5 @@
 import 'package:chat_sample/chat_page.dart';
+import 'package:chat_sample/model/message.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -9,6 +10,8 @@ void main() async {
   await dotenv.load(fileName: '.env');
   // Hive の初期化
   await Hive.initFlutter();
+  // Adapter を使えるように
+  Hive.registerAdapter(MessageItemAdapter());
   // 下の MyApp を run するよ〜
   runApp(const MyApp());
 }
