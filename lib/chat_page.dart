@@ -87,46 +87,78 @@ class _ChatPageState extends State<ChatPage> {
       "api.openai.com",
       "v1/chat/completions",
     );
-    final response = await http.post(
-      url,
-      body: json.encode({
-        "model": "gpt-3.5-turbo",
-        // system に追加すると面白い話し方とか指定できる！
-        // ```
-        // "messages": [
-        //   {"role": "system", "content": "語尾に『にゃん』をつけて可愛くしゃべってください！"},
-        //   ...state.messages,
-        // ],
-        // ```
-        "messages": box.values.toList(),
-      }),
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer $token"
-      },
+    try {
+      final response = await http.post(
+        url,
+        body: json.encode({
+          "model": "gpt-3.5-turbo",
+          // system に追加すると面白い話し方とか指定できる！
+          // ```
+          // "messages": [
+          //   {"role": "system", "content": "語尾に『にゃん』をつけて可愛くしゃべってください！"},
+          //   ...state.messages,
+          // ],
+          // ```
+          "messages": box.values.toList(),
+        }),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token"
+        },
       ) // 30秒経っても返答なかったら TimeoutException を投げる
           .timeout(const Duration(seconds: 30));
 
-    // map に変換
-    Map<String, dynamic> body = json.decode(utf8.decode(response.bodyBytes));
-    // model に変換
-    final answer = Answer.fromJson(body);
+      // map に変換
+      Map<String, dynamic> body = json.decode(utf8.decode(response.bodyBytes));
+      // model に変換
+      final answer = Answer.fromJson(body);
 
-    // ChatGPT のメッセージ
-    final botMessage = {
-      'content': answer.choices.first.message.content,
-      'role': 'assistant',
-    };
-    box.add(botMessage);
+      // ChatGPT のメッセージ
+      final botMessage = {
+        'content': answer.choices.first.message.content,
+        'role': 'assistant',
+      };
+      box.add(botMessage);
 
-    await getMessages();
-    setState(() {
-      // 回答受け取れたらローディングをやめる
-      loadingFlag = false;
-    });
+      await getMessages();
+      setState(() {
+        // 回答受け取れたらローディングをやめる
+        loadingFlag = false;
+      });
 
-    // .values で全ての value を取得できるので確認してみる
-    debugPrint(box.values.toString());
+      // .values で全ての value を取得できるので確認してみる
+      debugPrint(box.values.toString());
+      // TimeoutException などのエラーをキャッチしたら下ブロックの処理に入る！
+    } catch (e) {
+      // エラーになったらローディングは一旦止める
+      setState(() {
+        loadingFlag = false;
+      });
+
+      debugPrint("エラー: $e");
+
+      // await 内で context 使う時はその context が mount されたかを確認
+      if (context.mounted) {
+        // ダイアログを表示！
+        showDialog(
+          context: context,
+          builder: (_) {
+            return AlertDialog(
+              title: const Text('エラー'),
+              content: const Text('しばらく時間を置いてからお試しください'),
+              actions: [
+                TextButton(
+                  child: const Text('はい'),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                )
+              ],
+            );
+          },
+        );
+      }
+    }
   }
 
   @override
