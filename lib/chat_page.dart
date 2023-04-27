@@ -73,9 +73,7 @@ class _ChatPageState extends State<ChatPage> {
         //   ...state.messages,
         // ],
         // ```
-        "messages": [
-          {"role": "user", "content": text}
-        ]
+        "messages": box.values.toList(),
       }),
       headers: {
         "Content-Type": "application/json",
