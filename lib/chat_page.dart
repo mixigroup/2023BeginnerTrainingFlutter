@@ -20,9 +20,24 @@ class _ChatPageState extends State<ChatPage> {
   // メッセージを溜めてく箱を準備
   late final Future<Box> messageBox = Hive.openBox('messages');
 
-  String _text = '';
+  // state をリストに変更！
+  List messages = [];
   // ローディングの表示・非表示を切り替える bool 値を追加
   bool loadingFlag = false;
+
+  // build の実行前に 1 度だけ実行される
+  @override
+  void initState() {
+    super.initState();
+    // await を使うために Future で囲う
+    Future(() async {
+      final box = await messageBox;
+      setState(() {
+        // state に hive に保存した中身ぶっこむ！
+        messages = box.values.toList();
+      });
+    });
+  }
 
   Future<void> openPostPage() async {
     // pop 時に渡ってきた値は await して取得！
@@ -94,7 +109,7 @@ class _ChatPageState extends State<ChatPage> {
     box.add(botMessage);
 
     setState(() {
-      _text = answer.choices.first.message.content;
+      messages = box.values.toList();
       // 回答受け取れたらローディングをやめる
       loadingFlag = false;
     });
@@ -115,22 +130,51 @@ class _ChatPageState extends State<ChatPage> {
         ),
         elevation: 0,
       ),
-      // Center で真ん中寄せ
-      body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              _text,
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-            loadingFlag
-                ? const CircularProgressIndicator(
-                    color: Colors.orange,
-                  )
-                : const SizedBox.shrink()
-          ],
-        ),
+      body: SafeArea(
+        child: messages.isEmpty
+            ? const Center(
+                child: Text(
+                  'ChatGPT に何か聞いてみよう🫶🏻',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              )
+            // separated にするとアイテムの間に何かしらウィジェットを置ける（今回は隙間開けただけだけど線引いたりもできる）
+            : ListView.separated(
+                // reverse にすると List の下部から表示してくれるのでチャットぽい UI になる
+                reverse: true,
+                padding: const EdgeInsets.only(
+                  right: 14,
+                  left: 14,
+                  bottom: 40,
+                ),
+                itemCount: messages.length + 1,
+                itemBuilder: (context, index) {
+                  // Hive には新しいメッセージを先頭にしてデータが保存されていく
+                  // チャットアプリでは最新のメッセージが一番下になる方がより自然な UI になるので reverse する
+                  final reverseMessage = messages.reversed.toList();
+                  // reverse してるのでローディングを一番上に追加 = 一番下に表示されるように！
+                  if (index == 0) {
+                    return SizedBox(
+                      height: 40,
+                      width: 40,
+                      // Align がないとローディングが横幅いっぱい広がろうとする
+                      child: Align(
+                        alignment: Alignment.center,
+                        child: loadingFlag
+                            ? const CircularProgressIndicator(
+                                color: Colors.orangeAccent,
+                              )
+                            : const SizedBox.shrink(),
+                      ),
+                    );
+                  }
+                  // 保存されてるメッセージの content を取得
+                  return Text(reverseMessage[index - 1]['content']);
+                },
+                separatorBuilder: (context, index) {
+                  return const SizedBox(height: 12);
+                },
+              ),
       ),
       // 右下のプラスボタン（Floating Action Button と言います）
       floatingActionButton: FloatingActionButton(
