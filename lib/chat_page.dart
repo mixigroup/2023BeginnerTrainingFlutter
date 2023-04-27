@@ -1,3 +1,4 @@
+import 'package:chat_sample/model/answer.dart';
 import 'package:chat_sample/post_page.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -62,34 +63,12 @@ class _ChatPageState extends State<ChatPage> {
     );
 
     // map に変換
-    Map<String, dynamic> answer = json.decode(utf8.decode(response.bodyBytes));
+    Map<String, dynamic> body = json.decode(utf8.decode(response.bodyBytes));
+    // model に変換
+    final answer = Answer.fromJson(body);
 
-    // === response example ===
-    // flutter: {
-    //   id: chatcmpl-74OhlSNJnDsFFEODxJOyzSK9zCndX,
-    //   object: chat.completion,
-    //   created: 1681282633,
-    //   model: gpt-3.5-turbo-0301,
-    //   usage: {
-    //     prompt_tokens: 16,
-    //     completion_tokens: 135,
-    //     total_tokens: 151
-    //   },
-    //   choices: [
-    //     {
-    //       message: {
-    //         role: assistant,
-    //         content: こんにちは！何かお手伝いできますか？
-    //       },
-    //       finish_reason: stop,
-    //       index: 0
-    //     }
-    //   ]
-    // }
-
-    // response をみながら返信を state に渡す
     setState(() {
-      _text = answer['choices'].first["message"]["content"];
+      _text = answer.choices.first.message.content;
     });
   }
 
