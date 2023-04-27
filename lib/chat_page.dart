@@ -1,5 +1,8 @@
 import 'package:chat_sample/post_page.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ChatPage extends StatefulWidget {
   // title を受け取ってるね👀
@@ -20,19 +23,74 @@ class _ChatPageState extends State<ChatPage> {
       context,
       MaterialPageRoute(
         builder: (context) => const PostPage(),
-        // fullscreenDialog を true にすることで遷移方法が横ではなく下からになる
-        // またヘッダー左上のアイコンが戻るボタンからバツボタンに変わる！
         fullscreenDialog: true,
       ),
     );
-    // state 更新
-
-    // バツボタンを押して戻ると pop 時に値は渡って来なくて null になってしまうので条件を追加
+    // 受け取ったテキストを chatgpt に投げる！
     if (v != null) {
-      setState(() {
-        text = v;
-      });
+      await postChat(v);
     }
+  }
+
+  Future<void> postChat(String text) async {
+    final token = dotenv.get('MY_TOKEN');
+
+    // 接続！
+    var url = Uri.https(
+      "api.openai.com",
+      "v1/chat/completions",
+    );
+    final response = await http.post(
+      url,
+      body: json.encode({
+        "model": "gpt-3.5-turbo",
+        // system に追加すると面白い話し方とか指定できる！
+        // ```
+        // "messages": [
+        //   {"role": "system", "content": "語尾に『にゃん』をつけて可愛くしゃべってください！"},
+        //   ...state.messages,
+        // ],
+        // ```
+        "messages": [
+          {"role": "user", "content": text}
+        ]
+      }),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $token"
+      },
+    );
+
+    // map に変換
+    Map<String, dynamic> answer = json.decode(utf8.decode(response.bodyBytes));
+
+    // === response example ===
+    // flutter: {
+    //   id: chatcmpl-74OhlSNJnDsFFEODxJOyzSK9zCndX,
+    //   object: chat.completion,
+    //   created: 1681282633,
+    //   model: gpt-3.5-turbo-0301,
+    //   usage: {
+    //     prompt_tokens: 16,
+    //     completion_tokens: 135,
+    //     total_tokens: 151
+    //   },
+    //   choices: [
+    //     {
+    //       message: {
+    //         role: assistant,
+    //         content: こんにちは！何かお手伝いできますか？
+    //       },
+    //       finish_reason: stop,
+    //       index: 0
+    //     }
+    //   ]
+    // }
+
+    // response をみながら返信を state に渡す
+    setState(() {
+      text = answer['choices'].first["message"]["content"];
+    });
   }
 
   @override
