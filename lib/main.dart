@@ -1,11 +1,14 @@
 import 'package:chat_sample/chat_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 // 中枢！main.dart の main() が最初に呼ばれる
 void main() async {
   // token を読み込み
   await dotenv.load(fileName: '.env');
+  // Hive の初期化
+  await Hive.initFlutter();
   // 下の MyApp を run するよ〜
   runApp(const MyApp());
 }
