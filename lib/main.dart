@@ -1,4 +1,4 @@
-import 'package:chat_sample/my_home_page.dart';
+import 'package:chat_sample/chat_page.dart';
 import 'package:flutter/material.dart';
 
 // 中枢！main.dart の main() が最初に呼ばれる
@@ -33,11 +33,11 @@ class MyApp extends StatelessWidget {
       // OS のテーマ設定に合わせて変更できる
       title: 'Flutter Demo',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.amber,
       ),
       // 最初に表示させるページをは下の MyHomePage
       // 引数として title 渡してる（無くてもいいよ）
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const ChatPage(title: 'Chat by ChatGPT'),
     );
   }
 }
