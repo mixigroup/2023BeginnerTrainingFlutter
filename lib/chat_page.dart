@@ -47,6 +47,15 @@ class _ChatPageState extends State<ChatPage> {
     });
   }
 
+  Future<void> clearMessage() async {
+    final box = await messageBox;
+    // deleteFromDisk はディレクトリごと消してしまうので deleteAll を使う
+    // ディレクトリは init で作られる
+    box.deleteAll(box.keys);
+    // 削除したらもう一度メッセージたちを取得＆再描画
+    getMessages();
+  }
+
   Future<void> openPostPage() async {
     // pop 時に渡ってきた値は await して取得！
     final v = await Navigator.push(
@@ -220,15 +229,37 @@ class _ChatPageState extends State<ChatPage> {
               ),
       ),
       // 右下のプラスボタン（Floating Action Button と言います）
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          await openPostPage();
-        },
-        tooltip: 'post',
-        child: const Icon(
-          Icons.edit,
-          color: Colors.white,
-        ),
+      floatingActionButton: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // 全削除ボタンの追加
+          FloatingActionButton(
+            // There are multiple heroes that share the same tag within a subtree.
+            // 上記エラーが出てしまうのでボタンごとに hero tag を指定してあげる必要がある
+            heroTag: "clearMessage",
+            backgroundColor: Colors.red,
+            onPressed: () async {
+              await clearMessage();
+            },
+            tooltip: 'clear messages',
+            child: const Icon(
+              Icons.close,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(width: 8),
+          FloatingActionButton(
+            heroTag: "openPostPage",
+            onPressed: () async {
+              await openPostPage();
+            },
+            tooltip: 'post',
+            child: const Icon(
+              Icons.edit,
+              color: Colors.white,
+            ),
+          ),
+        ],
       ),
     );
   }
