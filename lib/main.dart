@@ -1,6 +1,8 @@
+import 'package:chat_sample/bloc/chat_bloc.dart';
 import 'package:chat_sample/chat_page.dart';
 import 'package:chat_sample/model/message.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
@@ -38,15 +40,18 @@ class MyApp extends StatelessWidget {
   // 画面遷移をする場合の状態監視，最初に表示させるページ `home: ` を指定しているよ
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      // OS のテーマ設定に合わせて変更できる
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.amber,
+    // MaterialApp 内で bloc 使えるように
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<ChatBloc>(create: (context) => ChatBloc()),
+      ],
+      child: MaterialApp(
+        title: 'Chat Demo',
+        theme: ThemeData(
+          primarySwatch: Colors.amber,
+        ),
+        home: const ChatPage(title: 'Chat by GPT-3'),
       ),
-      // 最初に表示させるページをは下の MyHomePage
-      // 引数として title 渡してる（無くてもいいよ）
-      home: const ChatPage(title: 'Chat by ChatGPT'),
     );
   }
 }
