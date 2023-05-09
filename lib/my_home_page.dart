@@ -36,29 +36,72 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            // SizedBox で大きさ（px）を決めてあげる
-            const SizedBox(
-              height: 50,
-              width: 50,
-              // ColoredBox で色を塗ってあげる
-              // 色も用意してくれてる🎨
-              child: ColoredBox(color: Colors.amber),
-              // 自分で色指定もできる（丸動かすと自動で RGB 挿入してくれる🥺）
-              // ```
-              // child: ColoredBox(color: Color.fromARGB(255, 85, 170, 116)),
-              // ```
-            ),
-            const SizedBox(
-              height: 100,
-              width: 100,
-              child: ColoredBox(color: Colors.pink),
-            ),
             const Text(
               'You have pushed the button this many times:',
             ),
             Text(
               '$_counter',
               style: Theme.of(context).textTheme.headlineMedium,
+            ),
+            Row(
+              children: const [
+                SizedBox(
+                  height: 50,
+                  width: 50,
+                  child: ColoredBox(color: Colors.blue),
+                ),
+                SizedBox(width: 8),
+                SizedBox(
+                  height: 50,
+                  width: 50,
+                  child: ColoredBox(color: Colors.blue),
+                ),
+              ],
+            ),
+            Row(
+              // center で真ん中寄せに
+              mainAxisAlignment: MainAxisAlignment.center,
+              // 応用：Row は広がる性質を持っているため子のサイズに合わせてあげることで Column の center が適用される
+              // ```
+              // mainAxisSize: MainAxisSize.min,
+              // ```
+              children: const [
+                SizedBox(
+                  height: 75,
+                  width: 75,
+                  child: ColoredBox(color: Colors.pink),
+                ),
+                // 隙間
+                SizedBox(width: 24),
+                SizedBox(
+                  height: 75,
+                  width: 75,
+                  child: ColoredBox(color: Colors.pink),
+                ),
+                SizedBox(width: 24),
+                SizedBox(
+                  height: 75,
+                  width: 75,
+                  child: ColoredBox(color: Colors.pink),
+                ),
+              ],
+            ),
+            Row(
+              // end にすることで右端に並ぶ
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: const [
+                SizedBox(
+                  height: 100,
+                  width: 100,
+                  child: ColoredBox(color: Colors.green),
+                ),
+                SizedBox(width: 8),
+                SizedBox(
+                  height: 100,
+                  width: 100,
+                  child: ColoredBox(color: Colors.green),
+                ),
+              ],
             ),
           ],
         ),
